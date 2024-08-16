@@ -25,11 +25,24 @@ async function run() {
     await client.connect();
     const productCollection = client.db("DigiMarket").collection("products");
 
-    // get All product
+    // get All products with pagination
     app.get("/product", async (req, res) => {
-      const result = await productCollection.find().toArray();
-      console.log(result);
-      res.send(result);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const result = await productCollection
+        .find()
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      const totalItems = await productCollection.countDocuments();
+
+      res.send({
+        data: result,
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+      });
     });
 
     console.log(
