@@ -25,6 +25,21 @@ async function run() {
     await client.connect();
     const productCollection = client.db("DigiMarket").collection("products");
 
+    // auth related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "365d",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
     // get All products with pagination
     app.get("/product", async (req, res) => {
       const page = parseInt(req.query.page) || 1;
