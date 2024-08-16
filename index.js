@@ -30,6 +30,10 @@ async function run() {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const searchQuery = req.query.search || "";
+      const category = req.query.category || "";
+      const brand = req.query.brand || "";
+      const priceRange = req.query.priceRange || "";
+      const sortOption = req.query.sort || "";
       const skip = (page - 1) * limit;
 
       const filter = searchQuery
