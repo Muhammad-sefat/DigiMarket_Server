@@ -36,12 +36,33 @@ async function run() {
       const sortOption = req.query.sort || "";
       const skip = (page - 1) * limit;
 
-      const filter = searchQuery
-        ? { name: { $regex: searchQuery, $options: "i" } }
-        : {};
+      let filter = {};
+      if (searchQuery) {
+        filter.name = { $regex: searchQuery, $options: "i" };
+      }
+      if (category) {
+        filter.category = category;
+      }
+      if (brand) {
+        filter.brand = brand;
+      }
+      if (priceRange) {
+        const [min, max] = priceRange.split("-").map(Number);
+        filter.price = { $gte: min, $lte: max || Infinity };
+      }
+
+      let sort = {};
+      if (sortOption === "price-asc") {
+        sort.price = 1;
+      } else if (sortOption === "price-desc") {
+        sort.price = -1;
+      } else if (sortOption === "date-desc") {
+        sort.createdAt = -1;
+      }
 
       const result = await productCollection
         .find(filter)
+        .sort(sort)
         .skip(skip)
         .limit(limit)
         .toArray();
