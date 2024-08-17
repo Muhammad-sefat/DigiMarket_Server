@@ -3,11 +3,19 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const port = process.env.POST || 3000;
 
-app.use(cors());
+const corsOptions = {
+  origin: ["http://localhost:5173"],
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 // Verify Token Middleware
 const verifyToken = async (req, res, next) => {
@@ -47,6 +55,7 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "365d",
       });
+      console.log(token);
       res
         .cookie("token", token, {
           httpOnly: true,
@@ -57,7 +66,7 @@ async function run() {
     });
 
     // get All products with pagination
-    app.get("/product", async (req, res) => {
+    app.get("/product", verifyToken, async (req, res) => {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const searchQuery = req.query.search || "";
